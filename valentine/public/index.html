@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>For Fareeda 💖</title>
+
+  <meta name="theme-color" content="#ff5c8d" />
+
+  <style>
+    :root { --pink:#ff5c8d; --green:#075e54; --bg:#fff; --text:#111; }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{background:#000;height:100svh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+
+    .phone{
+      width:min(420px,100%);
+      height:100svh;
+      background:var(--bg); color:var(--text);
+      border-radius:clamp(0px,5vw,36px);
+      overflow:hidden; position:relative;
+      box-shadow:0 25px 60px rgba(0,0,0,.6);
+    }
+
+    /* In-app notification banner (always works) */
+    .banner{
+      position:absolute; left:50%; transform:translateX(-50%);
+      top:-90px; width:92%;
+      background:rgba(245,245,245,.95);
+      border-radius:16px; padding:12px 14px;
+      box-shadow:0 12px 30px rgba(0,0,0,.25);
+      transition:.55s; z-index:50;
+      backdrop-filter: blur(8px);
+    }
+    .banner.show{ top:10px }
+    .banner b{font-size:14px}
+    .banner p{font-size:13px;color:#444;margin-top:2px}
+
+    /* FaceID-style lock */
+    .lock{
+      position:absolute; inset:0;
+      background:linear-gradient(180deg,#ff758c,#ff7eb3);
+      display:flex; align-items:center; justify-content:center;
+      z-index:40; color:#fff;
+      padding:24px; text-align:center;
+    }
+    .lock-card{
+      width:min(340px,92%);
+      background:rgba(255,255,255,.15);
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:0 18px 40px rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+    }
+    .lock h1{font-size:clamp(18px,5vw,22px);margin-bottom:6px}
+    .lock small{opacity:.95;display:block;margin-bottom:12px}
+    .face{
+      width:110px;height:110px;margin:10px auto 14px;
+      border-radius:28px;
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.25);
+      position:relative;
+      overflow:hidden;
+    }
+    .scan{
+      position:absolute; left:-30%; top:0; width:30%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+      animation:scan 1.6s infinite;
+    }
+    @keyframes scan{ 0%{left:-30%} 100%{left:100%} }
+    .unlock-btn{
+      width:100%;
+      border:none; border-radius:16px;
+      padding:12px 14px;
+      background:#fff; color:#111;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .row{display:flex; gap:10px; margin-top:10px}
+    .row button{
+      flex:1; border:none; border-radius:16px;
+      padding:10px 12px; background:rgba(0,0,0,.15);
+      color:#fff;
+      cursor:pointer;
+    }
+
+    /* Passcode modal */
+    .passModal{
+      position:absolute; inset:0; z-index:45;
+      display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.35);
+    }
+    .passBox{
+      width:min(340px,92%);
+      background:#fff; border-radius:22px;
+      padding:16px;
+    }
+    .dots{display:flex; gap:10px; justify-content:center; margin:10px 0 12px}
+    .dots span{width:12px;height:12px;border-radius:999px;background:#ddd}
+    .keypad{
+      display:grid; grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+    .keypad button{
+      height:56px; border:none; border-radius:16px;
+      background:#f3f3f3; font-size:18px;
+      font-weight:900;
+      letter-spacing:.08em;
+      cursor:pointer;
+    }
+    .shake{animation:shake .35s}
+    @keyframes shake{
+      0%,100%{transform:translateX(0)}
+      25%{transform:translateX(-8px)}
+      75%{transform:translateX(8px)}
+    }
+
+    /* Header / chat */
+    .header{
+      background:var(--green); color:#fff;
+      padding:12px 14px; display:flex; align-items:center; gap:10px;
+    }
+    .header img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+    .header .sub{font-size:12px;opacity:.85}
+
+    .chat{
+      padding:14px; height:calc(100% - 160px);
+      overflow:hidden;
+      display:flex; flex-direction:column; gap:10px;
+      background:linear-gradient(#fff,#fff7fb);
+    }
+    .bubble{
+      max-width:86%;
+      padding:12px 14px;
+      border-radius:18px;
+      font-size:clamp(13px,3.8vw,15px);
+      opacity:0;
+      transform:translateY(10px);
+      transition:.45s;
+      line-height:1.35;
+    }
+    .bubble.me{background:#dcf8c6; align-self:flex-end}
+    .bubble.her{background:#f2f2f2; align-self:flex-start}
+    .bubble.show{opacity:1; transform:translateY(0)}
+
+    .typing{
+      display:none;
+      align-self:flex-start;
+      background:#f2f2f2;
+      border-radius:18px;
+      padding:10px 12px;
+      width:92px;
+    }
+    .typing i{
+      display:inline-block; width:7px;height:7px;border-radius:999px;
+      background:#777; margin:0 2px;
+      animation:blink 1.1s infinite;
+      opacity:.6;
+    }
+    .typing i:nth-child(2){animation-delay:.18s}
+    .typing i:nth-child(3){animation-delay:.36s}
+    @keyframes blink{ 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(-3px);opacity:1} }
+
+    /* Heart area */
+    .heartWrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:2px}
+    .heart{
+      width:clamp(96px,28vw,120px);
+      height:clamp(96px,28vw,120px);
+      background:red; position:relative;
+      transform:rotate(-45deg);
+      animation:beat 1s infinite;
+      box-shadow:0 0 22px rgba(255,0,0,.55);
+      cursor:pointer;
+      user-select:none;
+      touch-action:manipulation;
+    }
+    .heart:before,.heart:after{
+      content:""; position:absolute;
+      width:100%; height:100%;
+      background:red; border-radius:50%;
+    }
+    .heart:before{top:-50%}
+    .heart:after{left:50%}
+    .heart span{
+      position:absolute;
+      transform:rotate(45deg);
+      top:38%; left:10%;
+      width:80%;
+      text-align:center;
+      color:#fff; font-weight:900;
+      text-shadow:0 0 10px rgba(255,255,255,.7);
+      font-size:clamp(12px,3.6vw,15px);
+    }
+    @keyframes beat{
+      0%{transform:rotate(-45deg) scale(1)}
+      30%{transform:rotate(-45deg) scale(1.14)}
+      60%{transform:rotate(-45deg) scale(1)}
+    }
+
+    .energy{
+      width:82%; height:8px; background:#eee;
+      border-radius:999px; overflow:hidden;
+    }
+    .energy > div{
+      height:100%; width:8%;
+      background:var(--pink);
+      transition:.25s;
+    }
+
+    .lang{font-size:13px;color:#444;min-height:18px;text-align:center}
+
+    .controls{
+      position:absolute; bottom:12px; left:0; right:0;
+      display:flex; justify-content:center; gap:10px;
+      padding:0 12px;
+    }
+    .controls button{
+      border:none; border-radius:18px;
+      padding:12px 14px;
+      background:var(--pink);
+      color:#fff;
+      font-weight:800;
+      flex:1;
+      max-width:190px;
+      cursor:pointer;
+    }
+
+    /* petals / float hearts / confetti */
+    .petal,.float,.confetti{position:absolute; pointer-events:none}
+    .petal{top:-20px; font-size:18px; animation:fall linear forwards}
+    @keyframes fall{to{transform:translateY(120vh) rotate(360deg);opacity:0}}
+
+    .float{bottom:-10px;font-size:22px;animation:float 4s linear forwards}
+    @keyframes float{to{transform:translateY(-120vh);opacity:0}}
+
+    .confetti{width:7px;height:7px;animation:conf 2.8s linear forwards}
+    @keyframes conf{to{transform:translateY(120vh) rotate(520deg);opacity:0}}
+
+    /* final screen */
+    .final{
+      position:absolute; inset:0; z-index:60;
+      background:linear-gradient(180deg,#ff758c,#ff7eb3);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:10px;
+      color:#fff;
+      opacity:0; pointer-events:none;
+      transition:.8s;
+      padding:18px; text-align:center;
+    }
+    .final.show{opacity:1; pointer-events:auto}
+    .final h2{font-size:clamp(26px,8vw,38px)}
+    .final p{opacity:.95; max-width:330px; line-height:1.35}
+
+    /* flash */
+    .flash{
+      position:absolute; inset:0; background:#fff;
+      opacity:0; z-index:70; pointer-events:none;
+    }
+    .flash.go{animation:flash .6s}
+    @keyframes flash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+  </style>
+</head>
+
+<body>
+  <div class="phone" id="phone">
+    <div class="banner" id="banner">
+      <b id="bannerTitle">Fareeda 💖</b>
+      <p id="bannerMsg">Thinking of you…</p>
+    </div>
+
+    <!-- Lock -->
+    <section class="lock" id="lock">
+      <div class="lock-card" id="lockCard">
+        <h1>💖 For Fareeda</h1>
+        <small id="countdown">Enter what you are to me… 💕</small>
+        <div class="face"><div class="scan"></div></div>
+        <button class="unlock-btn" id="unlockBtn">Unlock</button>
+
+        <div class="row">
+          <button id="passBtn">Use Passcode</button>
+          <button id="notifyBtn">Enable Notifications</button>
+        </div>
+
+        <div class="row">
+          <button id="momentBtn">📸 Moment</button>
+          <button id="installTipBtn">Install Tip</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Passcode -->
+    <div class="passModal" id="passModal">
+      <div class="passBox" id="passBox">
+        <div style="text-align:center;font-weight:900">Enter Passcode</div>
+        <div class="dots" id="dots"><span></span><span></span><span></span><span></span></div>
+
+        <!-- Letters keypad: M I N E -->
+        <div class="keypad">
+          <button onclick="pressChar('m')">M</button>
+          <button onclick="pressChar('i')">I</button>
+          <button onclick="pressChar('n')">N</button>
+          <button onclick="pressChar('e')">E</button>
+
+          <button onclick="backspace()">⌫</button>
+          <button onclick="clearCode()">Clear</button>
+          <button onclick="closePass()">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+      <img src="her.jpg" alt="Fareeda">
+      <div>
+        <div style="font-weight:900">Fareeda</div>
+        <div class="sub" id="status">online</div>
+      </div>
+    </header>
+
+    <!-- Chat -->
+    <main class="chat" id="chat">
+      <div class="bubble me" id="m1">Hey love 💕</div>
+      <div class="bubble me" id="m2">I made this just for you…</div>
+
+      <div class="heartWrap">
+        <div class="heart" id="heart"><span>Fareeda</span></div>
+        <div class="energy"><div id="energyBar"></div></div>
+        <div class="lang" id="lang"></div>
+      </div>
+
+      <div class="bubble me" id="m3">You mean everything to me ❤️</div>
+
+      <div class="typing" id="typing"><i></i><i></i><i></i></div>
+
+      <!-- Voice-style text replies (no audio) -->
+      <div class="bubble her" id="h1">😭😭 Babe stoppp… I’m smiling like crazy rn 💖</div>
+      <div class="bubble her" id="h2">This is so you… soft boy energy 😭💕</div>
+      <div class="bubble her" id="h3">Happy Valentine’s Day my love 💘 I love this sooo much</div>
+    </main>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="shareBtn">🔗 Share</button>
+      <button id="revealBtn">❤️ Reveal</button>
+    </div>
+
+    <!-- Final -->
+    <section class="final" id="final">
+      <h2>I Love You 💖</h2>
+      <p id="finalNote">
+        Fareeda… you’re not just my Valentine. You’re my peace, my smile, and my favorite place to be. 💖
+      </p>
+      <button id="fireBtn" style="background:#fff;color:#111;border:none;border-radius:18px;padding:12px 16px;font-weight:900;cursor:pointer">
+        🎆 Celebrate
+      </button>
+    </section>
+
+    <div class="flash" id="flash"></div>
+  </div>
+
+<script>
+/* ================== SETTINGS ================== */
+const HER_NAME = "Fareeda";
+const PASSCODE = "mine";           // 4 letters: m i n e
+const DATE_LOCK = false;           // set true to allow unlock only on Feb 14
+const AUTO_REVEAL_AT = { hour: 20, minute: 0 }; // 8:00pm
+/* ============================================== */
+
+document.getElementById("bannerTitle").textContent = `${HER_NAME} 💖`;
+
+/* Helpers */
+const banner = document.getElementById("banner");
+function bannerPing(title, msg){
+  document.getElementById("bannerTitle").textContent = title;
+  document.getElementById("bannerMsg").textContent = msg;
+  banner.classList.add("show");
+  setTimeout(()=>banner.classList.remove("show"), 3200);
+}
+
+/* Valentine date lock */
+function isValentine(){
+  const d = new Date();
+  return d.getMonth() === 1 && d.getDate() === 14; // Feb 14
+}
+
+/* Countdown */
+(function(){
+  const v = new Date(new Date().getFullYear(), 1, 14);
+  const diff = v - new Date();
+  const days = Math.floor(diff / (1000*60*60*24));
+  const el = document.getElementById("countdown");
+  el.textContent = days >= 0 ? `${days} days to Valentine 💘` : `Happy Valentine 💖`;
+})();
+
+/* “Install” tip button (since this is a single file) */
+document.getElementById("installTipBtn").addEventListener("click", ()=>{
+  bannerPing("Install Tip 📲", "On iPhone: Share → Add to Home Screen. On Android: Menu → Install app.");
+});
+
+/* Moment flash */
+const flash = document.getElementById("flash");
+function moment(){
+  flash.classList.add("go");
+  setTimeout(()=>flash.classList.remove("go"), 650);
+  bannerPing("📸 Moment", "This is one of my favorite moments with you 💖");
+}
+document.getElementById("momentBtn").addEventListener("click", moment);
+
+/* Chat show (type-like reveal) */
+function showChat(){
+  const ids = ["m1","m2","m3"];
+  ids.forEach((id,i)=> setTimeout(()=>document.getElementById(id).classList.add("show"), i*650));
+  setTimeout(()=>simulateHer(), 2300);
+}
+
+/* simulated typing + replies */
+function simulateHer(){
+  const typing = document.getElementById("typing");
+  const status = document.getElementById("status");
+  status.textContent = "typing…";
+  typing.style.display = "block";
+  setTimeout(()=>{
+    typing.style.display="none";
+    status.textContent="online";
+    const hs=["h1","h2","h3"];
+    hs.forEach((id,i)=> setTimeout(()=>document.getElementById(id).classList.add("show"), i*700));
+    setTimeout(()=>bannerPing("Hint 💡", "Try tapping the heart 14 times 😉"), 2200);
+  }, 1600);
+}
+
+/* Rose petals */
+function startPetals(){
+  setInterval(()=>{
+    const p = document.createElement("div");
+    p.className="petal";
+    p.textContent="🌹";
+    p.style.left = Math.random()*100 + "vw";
+    p.style.animationDuration = (5 + Math.random()*3) + "s";
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 8500);
+  }, 800);
+}
+
+/* Floating hearts */
+function floatHeart(){
+  const h = document.createElement("div");
+  h.className = "float";
+  h.textContent = "❤️";
+  h.style.left = Math.random()*100 + "vw";
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(), 4000);
+}
+
+/* Confetti */
+function celebrate(){
+  for(let i=0;i<90;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.top="-10px";
+    c.style.background=`hsl(${Math.random()*360},80%,60%)`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 2800);
+  }
+}
+document.getElementById("fireBtn").addEventListener("click", celebrate);
+
+/* Final reveal */
+const final = document.getElementById("final");
+function reveal(fromSecret=false){
+  final.classList.add("show");
+  if(fromSecret){
+    document.getElementById("finalNote").textContent =
+      `Fareeda… you found the secret 💖 So here’s mine: I choose you. Today, tomorrow, always.`;
+  }
+}
+document.getElementById("revealBtn").addEventListener("click", ()=>reveal(false));
+
+/* Auto reveal at time */
+(function(){
+  const now = new Date();
+  const t = new Date();
+  t.setHours(AUTO_REVEAL_AT.hour, AUTO_REVEAL_AT.minute, 0, 0);
+  if(now >= t) setTimeout(()=>reveal(false), 1200);
+})();
+
+/* Love in languages */
+const loves = [
+  "I love you ❤️",
+  "Je t’aime 🇫🇷",
+  "Te amo 🇪🇸",
+  "Ich liebe dich 🇩🇪",
+  "Ti amo 🇮🇹",
+  "愛してる 🇯🇵",
+  "Saranghae 🇰🇷",
+  "Mo nifẹ rẹ 🇳🇬"
+];
+let li=0;
+setInterval(()=>{
+  document.getElementById("lang").textContent = loves[li];
+  li = (li+1)%loves.length;
+}, 1800);
+
+/* Heart energy + easter egg */
+let power = 8;
+let taps = 0;
+const bar = document.getElementById("energyBar");
+const heart = document.getElementById("heart");
+
+heart.addEventListener("click", ()=>{
+  taps++;
+  power = Math.min(100, power + 5);
+  bar.style.width = power + "%";
+  heart.style.boxShadow = `0 0 28px hsl(${Math.random()*360},80%,60%)`;
+  for(let i=0;i<4;i++) floatHeart();
+
+  // Easter egg: 14 taps
+  if(taps === 14){
+    celebrate();
+    reveal(true);
+    bannerPing(`${HER_NAME} 💖`, "You found the Valentine secret 🥰");
+  }
+});
+
+/* Long press = quick reveal */
+let pressTimer;
+heart.addEventListener("touchstart", ()=>{
+  pressTimer = setTimeout(()=> { reveal(true); }, 900);
+},{passive:true});
+heart.addEventListener("touchend", ()=> clearTimeout(pressTimer));
+
+/* Good morning / good night auto message */
+function autoDayMessage(){
+  const hr = new Date().getHours();
+  if(hr >= 5 && hr < 12){
+    bannerPing("Good morning ☀️", `Good morning ${HER_NAME} 💖 I hope your day is soft and sweet.`);
+  } else if(hr >= 20 || hr < 5){
+    bannerPing("Good night 🌙", `Good night ${HER_NAME} 💖 Sleep well… I’m proud of you.`);
+  }
+}
+
+/* Location-based vibe (no coordinates shown) */
+function locationVibe(){
+  if(!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    () => bannerPing("📍 Love ping", "Sending love to your area 💖"),
+    () => {}
+  );
+}
+
+/* In-app notification loop */
+function startInAppNotifications(){
+  const msgs=[
+    "Miss you 💕",
+    "Thinking of you 🌸",
+    "You’re my favorite ❤️",
+    "One hug please 🫂",
+    "You make me smile 😊"
+  ];
+  setInterval(()=>{
+    bannerPing(`${HER_NAME} 💖`, msgs[Math.floor(Math.random()*msgs.length)]);
+  }, 9000);
+}
+
+/* Real browser notifications (works only while browser allows it) */
+function enableBrowserNotifications(){
+  if(!("Notification" in window)){
+    bannerPing("Notifications", "Not supported on this browser.");
+    return;
+  }
+  Notification.requestPermission().then(p=>{
+    if(p === "granted"){
+      bannerPing("✅ Notifications on", "Now you can get love pings 💖");
+      try{
+        new Notification(`${HER_NAME} 💖`, {
+          body: "Thinking of you… 🌸",
+          icon: "her.jpg"
+        });
+      } catch {}
+    } else {
+      bannerPing("Notifications", "Permission not granted.");
+    }
+  });
+}
+document.getElementById("notifyBtn").addEventListener("click", enableBrowserNotifications);
+
+/* Share */
+document.getElementById("shareBtn").addEventListener("click", async ()=>{
+  const msg = `I made this just for you, ${HER_NAME} 💖`;
+  if(navigator.share){
+    try{ await navigator.share({ title:"For Fareeda 💖", text:msg, url:location.href }); }
+    catch(e){}
+  }else{
+    bannerPing("Share", "Copy the link from the address bar and send it 💖");
+  }
+});
+
+/* ================= PASSCODE (LETTERS) ================= */
+const passModal=document.getElementById("passModal");
+const passBox=document.getElementById("passBox");
+const dotEls=[...document.querySelectorAll("#dots span")];
+let code="";
+
+function openPass(){ passModal.style.display="flex"; }
+function closePass(){
+  clearCode();
+  passModal.style.display="none";
+}
+function updateDots(){
+  dotEls.forEach((d,i)=> d.style.background = i < code.length ? "#111" : "#ddd");
+}
+function clearCode(){
+  code="";
+  updateDots();
+}
+function backspace(){
+  if(!code.length) return;
+  code = code.slice(0,-1);
+  updateDots();
+}
+function wrongCode(){
+  passBox.classList.add("shake");
+  setTimeout(()=>passBox.classList.remove("shake"), 360);
+  clearCode();
+  bannerPing("Oops 😅", "Try again… (hint: what you are to me 💕)");
+}
+function pressChar(ch){
+  if(code.length >= 4) return;
+  code += ch.toLowerCase();
+  updateDots();
+  if(code.length === 4){
+    if(code === PASSCODE){
+      closePass();
+      unlockFlow();
+    } else {
+      wrongCode();
+    }
+  }
+}
+document.getElementById("passBtn").addEventListener("click", openPass);
+
+/* ================= UNLOCK FLOW ================= */
+const lock=document.getElementById("lock");
+document.getElementById("unlockBtn").addEventListener("click", unlockFlow);
+
+function unlockFlow(){
+  if(DATE_LOCK && !isValentine()){
+    bannerPing("Locked 💘","Come back on Feb 14");
+    moment();
+    return;
+  }
+
+  lock.style.display="none";
+  showChat();
+  startPetals();
+  startInAppNotifications();
+  autoDayMessage();
+  locationVibe();
+
+  bannerPing("Unlocked 💖", `Welcome, ${HER_NAME}… I saved this just for you.`);
+}
+
+/* Start with a gentle hint */
+setTimeout(()=>bannerPing(`${HER_NAME} 💖`, "Tap Unlock… or use passcode: M I N E 😉"), 900);
+</script>
+</body>
+</html>
